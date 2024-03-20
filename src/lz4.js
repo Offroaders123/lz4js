@@ -79,6 +79,7 @@ function makeHashTable () {
 // Clear hashtable.
 /**
  * @param {number[] | Uint32Array} table
+ * @returns {void}
  */
 function clearHashTable (table) {
   for (var i = 0; i < hashSize; i++) {
@@ -148,12 +149,20 @@ function sliceArray (array, start, end) {
 // --
 
 // Calculates an upper bound for lz4 compression.
-export function compressBound (/** @type {number} */ n) {
+/**
+ * @param {number} n
+ * @returns {number}
+ */
+export function compressBound (n) {
   return (n + (n / 255) + 16) | 0;
 };
 
 // Calculates an upper bound for lz4 decompression, by reading the data.
-export function decompressBound (/** @type {number[] | Uint8Array} */ src) {
+/**
+ * @param {number[] | Uint8Array} src
+ * @returns {number}
+ */
+export function decompressBound (src) {
   var sIndex = 0;
 
   // Read magic number
@@ -221,7 +230,15 @@ export function decompressBound (/** @type {number[] | Uint8Array} */ src) {
 export { makeBuffer };
 
 // Decompresses a block of Lz4.
-export function decompressBlock (/** @type {number[] | Uint8Array} */ src, /** @type {number[] | Uint8Array} */ dst, /** @type {number} */ sIndex, /** @type {number} */ sLength, /** @type {number} */ dIndex) {
+/**
+ * @param {number[] | Uint8Array} src
+ * @param {number[] | Uint8Array} dst
+ * @param {number} sIndex
+ * @param {number} sLength
+ * @param {number} dIndex
+ * @returns {number}
+ */
+export function decompressBlock (src, dst, sIndex, sLength, dIndex) {
   var mLength, mOffset, sEnd, n, i;
   var hasCopyWithin = dst.copyWithin !== undefined && dst.fill !== undefined;
 
@@ -295,7 +312,15 @@ export function decompressBlock (/** @type {number[] | Uint8Array} */ src, /** @
 };
 
 // Compresses a block with Lz4.
-export function compressBlock (/** @type {number[] | Uint8Array} */ src, /** @type {number[] | Uint8Array} */ dst, /** @type {number} */ sIndex, /** @type {number} */ sLength, /** @type {number[] | Uint32Array} */ hashTable) {
+/**
+ * @param {number[] | Uint8Array} src
+ * @param {number[] | Uint8Array} dst
+ * @param {number} sIndex
+ * @param {number} sLength
+ * @param {number[] | Uint32Array} hashTable
+ * @returns {number}
+ */
+export function compressBlock (src, dst, sIndex, sLength, hashTable) {
   var mIndex, mAnchor, mLength, mOffset, mStep;
   var literalCount, dIndex, sEnd, n;
 
@@ -411,7 +436,12 @@ export function compressBlock (/** @type {number[] | Uint8Array} */ src, /** @ty
 };
 
 // Decompresses a frame of Lz4 data.
-export function decompressFrame (/** @type {number[] | Uint8Array} */ src, /** @type {number[] | Uint8Array} */ dst) {
+/**
+ * @param {number[] | Uint8Array} src
+ * @param {number[] | Uint8Array} dst
+ * @returns {number}
+ */
+export function decompressFrame (src, dst) {
   var useBlockSum, useContentSum, useContentSize, descriptor;
   var sIndex = 0;
   var dIndex = 0;
@@ -491,7 +521,12 @@ export function decompressFrame (/** @type {number[] | Uint8Array} */ src, /** @
 };
 
 // Compresses data to an Lz4 frame.
-export function compressFrame (/** @type {number[] | Uint8Array} */ src, /** @type {number[] | Uint8Array} */ dst) {
+/**
+ * @param {number[] | Uint8Array} src
+ * @param {number[] | Uint8Array} dst
+ * @returns {number}
+ */
+export function compressFrame (src, dst) {
   var dIndex = 0;
 
   // Write magic number.
@@ -555,7 +590,12 @@ export function compressFrame (/** @type {number[] | Uint8Array} */ src, /** @ty
 // Decompresses a buffer containing an Lz4 frame. maxSize is optional; if not
 // provided, a maximum size will be determined by examining the data. The
 // buffer returned will always be perfectly-sized.
-export function decompress (/** @type {number[] | Uint8Array} */ src, /** @type {number | undefined} */ maxSize) {
+/**
+ * @param {number[] | Uint8Array} src
+ * @param {number} [maxSize]
+ * @returns {number[] | Uint8Array}
+ */
+export function decompress (src, maxSize) {
   var dst, size;
 
   if (maxSize === undefined) {
@@ -574,7 +614,12 @@ export function decompress (/** @type {number[] | Uint8Array} */ src, /** @type 
 // Compresses a buffer to an Lz4 frame. maxSize is optional; if not provided,
 // a buffer will be created based on the theoretical worst output size for a
 // given input size. The buffer returned will always be perfectly-sized.
-export function compress (/** @type {number[] | Uint8Array} */ src, /** @type {number | undefined} */ maxSize) {
+/**
+ * @param {number[] | Uint8Array} src
+ * @param {number} [maxSize]
+ * @returns {number[] | Uint8Array}
+ */
+export function compress (src, maxSize) {
   var dst, size;
 
   if (maxSize === undefined) {
