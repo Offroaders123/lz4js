@@ -44,24 +44,28 @@ var fdVersionMask = 0xC0;
 
 // Block sizes.
 var bsUncompressed = 0x80000000;
-var bsDefault = 7;
+var bsDefault = /** @type {const} */ (7);
 var bsShift = 4;
 var bsMask = 7;
-var bsMap = {
+var bsMap = /** @type {const} */ ({
   4: 0x10000,
   5: 0x40000,
   6: 0x100000,
   7: 0x400000
-};
+});
 
 // Utility functions/primitives
 // --
 
 // Makes our hashtable. On older browsers, may return a plain array.
+/**
+ * @returns {number[] | Uint32Array}
+ */
 function makeHashTable () {
   try {
     return new Uint32Array(hashSize);
   } catch (error) {
+    /** @type {number[]} */
     var hashTable = new Array(hashSize);
 
     for (var i = 0; i < hashSize; i++) {
@@ -73,6 +77,9 @@ function makeHashTable () {
 }
 
 // Clear hashtable.
+/**
+ * @param {number[] | Uint32Array} table
+ */
 function clearHashTable (table) {
   for (var i = 0; i < hashSize; i++) {
     hashTable[i] = 0;
@@ -80,10 +87,15 @@ function clearHashTable (table) {
 }
 
 // Makes a byte buffer. On older browsers, may return a plain array.
+/**
+ * @param {number} size
+ * @returns {number[] | Uint8Array}
+ */
 function makeBuffer (size) {
   try {
     return new Uint8Array(size);
   } catch (error) {
+    /** @type {number[]} */
     var buf = new Array(size);
 
     for (var i = 0; i < size; i++) {
@@ -94,6 +106,14 @@ function makeBuffer (size) {
   }
 }
 
+/**
+ * @template {number[] | Uint8Array} T
+ * 
+ * @param {T} array
+ * @param {number} start
+ * @param {number} [end]
+ * @returns {T}
+ */
 function sliceArray (array, start, end) {
   if (typeof array.buffer !== undefined) {
     if (Uint8Array.prototype.slice) {
@@ -128,12 +148,12 @@ function sliceArray (array, start, end) {
 // --
 
 // Calculates an upper bound for lz4 compression.
-exports.compressBound = function compressBound (n) {
+exports.compressBound = function compressBound (/** @type {number} */ n) {
   return (n + (n / 255) + 16) | 0;
 };
 
 // Calculates an upper bound for lz4 decompression, by reading the data.
-exports.decompressBound = function decompressBound (src) {
+exports.decompressBound = function decompressBound (/** @type {number[] | Uint8Array} */ src) {
   var sIndex = 0;
 
   // Read magic number
@@ -156,7 +176,7 @@ exports.decompressBound = function decompressBound (src) {
   var useContentSize = (descriptor & fdContentSize) !== 0;
 
   // Read block size
-  var bsIdx = (src[sIndex++] >> bsShift) & bsMask;
+  var bsIdx = /** @type {keyof typeof bsMap} */ ((src[sIndex++] >> bsShift) & bsMask);
 
   if (bsMap[bsIdx] === undefined) {
     throw new Error('invalid block size ' + bsIdx);
@@ -201,7 +221,7 @@ exports.decompressBound = function decompressBound (src) {
 exports.makeBuffer = makeBuffer;
 
 // Decompresses a block of Lz4.
-exports.decompressBlock = function decompressBlock (src, dst, sIndex, sLength, dIndex) {
+exports.decompressBlock = function decompressBlock (/** @type {number[] | Uint8Array} */ src, /** @type {number[] | Uint8Array} */ dst, /** @type {number} */ sIndex, /** @type {number} */ sLength, /** @type {number} */ dIndex) {
   var mLength, mOffset, sEnd, n, i;
   var hasCopyWithin = dst.copyWithin !== undefined && dst.fill !== undefined;
 
@@ -275,7 +295,7 @@ exports.decompressBlock = function decompressBlock (src, dst, sIndex, sLength, d
 };
 
 // Compresses a block with Lz4.
-exports.compressBlock = function compressBlock (src, dst, sIndex, sLength, hashTable) {
+exports.compressBlock = function compressBlock (/** @type {number[] | Uint8Array} */ src, /** @type {number[] | Uint8Array} */ dst, /** @type {number} */ sIndex, /** @type {number} */ sLength, /** @type {number[] | Uint32Array} */ hashTable) {
   var mIndex, mAnchor, mLength, mOffset, mStep;
   var literalCount, dIndex, sEnd, n;
 
@@ -391,7 +411,7 @@ exports.compressBlock = function compressBlock (src, dst, sIndex, sLength, hashT
 };
 
 // Decompresses a frame of Lz4 data.
-exports.decompressFrame = function decompressFrame (src, dst) {
+exports.decompressFrame = function decompressFrame (/** @type {number[] | Uint8Array} */ src, /** @type {number[] | Uint8Array} */ dst) {
   var useBlockSum, useContentSum, useContentSize, descriptor;
   var sIndex = 0;
   var dIndex = 0;
@@ -417,7 +437,7 @@ exports.decompressFrame = function decompressFrame (src, dst) {
   useContentSize = (descriptor & fdContentSize) !== 0;
 
   // Read block size
-  var bsIdx = (src[sIndex++] >> bsShift) & bsMask;
+  var bsIdx = /** @type {keyof typeof bsMap} */ ((src[sIndex++] >> bsShift) & bsMask);
 
   if (bsMap[bsIdx] === undefined) {
     throw new Error('invalid block size');
@@ -471,7 +491,7 @@ exports.decompressFrame = function decompressFrame (src, dst) {
 };
 
 // Compresses data to an Lz4 frame.
-exports.compressFrame = function compressFrame (src, dst) {
+exports.compressFrame = function compressFrame (/** @type {number[] | Uint8Array} */ src, /** @type {number[] | Uint8Array} */ dst) {
   var dIndex = 0;
 
   // Write magic number.
@@ -535,7 +555,7 @@ exports.compressFrame = function compressFrame (src, dst) {
 // Decompresses a buffer containing an Lz4 frame. maxSize is optional; if not
 // provided, a maximum size will be determined by examining the data. The
 // buffer returned will always be perfectly-sized.
-exports.decompress = function decompress (src, maxSize) {
+exports.decompress = function decompress (/** @type {number[] | Uint8Array} */ src, /** @type {number | undefined} */ maxSize) {
   var dst, size;
 
   if (maxSize === undefined) {
@@ -554,7 +574,7 @@ exports.decompress = function decompress (src, maxSize) {
 // Compresses a buffer to an Lz4 frame. maxSize is optional; if not provided,
 // a buffer will be created based on the theoretical worst output size for a
 // given input size. The buffer returned will always be perfectly-sized.
-exports.compress = function compress (src, maxSize) {
+exports.compress = function compress (/** @type {number[] | Uint8Array} */ src, /** @type {number | undefined} */ maxSize) {
   var dst, size;
 
   if (maxSize === undefined) {

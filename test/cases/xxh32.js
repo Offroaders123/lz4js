@@ -5,6 +5,7 @@ var xxh32 = require('../../xxh32');
 describe('xxh32', function () {
   describe('#hash', function () {
     it('passes the github.com/pierrec/xxHash tests', function () {
+      /** @type {[number, number[]][]} */
       var tests = [
         [0x02cc5d05, []],
         [0x550d7456, [0x61]],

@@ -3,6 +3,7 @@ var expect = require('chai').expect;
 var lz4 = require('../../lz4');
 
 // Find root object (depends on JS environment)
+/** @type {typeof globalThis} */
 var root;
 if (typeof window !== 'undefined') {
   root = window;
@@ -11,6 +12,10 @@ if (typeof window !== 'undefined') {
 }
 
 // Use plain old arrays for older browsers and older Node.
+/**
+ * @param {number | number[]} [arg]
+ * @returns {number[] | Uint8Array}
+ */
 function byteArray (arg) {
   if (root.Uint8Array) {
     return new Uint8Array(arg);
