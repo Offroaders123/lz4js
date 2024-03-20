@@ -3,7 +3,10 @@
   "version": "0.2.0",
   "description": "An Lz4 implementation for the browser.",
   "main": "lz4.js",
+  "types": "./types/lz4.d.ts",
   "scripts": {
+    "build": "tsc --project ./tsconfig.build.json",
+    "dev": "tsc --watch",
     "test": "mocha -R spec test/cases"
   },
   "repository": {
@@ -24,6 +27,9 @@
   },
   "homepage": "https://github.com/Benzinga/lz4js#readme",
   "devDependencies": {
+    "@types/chai": "^4.3.13",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.11.30",
     "chai": "^3.5.0",
     "eslint": "^3.0.1",
     "eslint-config-semistandard": "^6.0.2",
@@ -31,6 +37,7 @@
     "eslint-plugin-promise": "^2.0.0",
     "eslint-plugin-react": "^5.2.2",
     "eslint-plugin-standard": "^2.0.0",
-    "mocha": "^2.5.3"
+    "mocha": "^2.5.3",
+    "typescript": "^5.4.2"
   }
 }
