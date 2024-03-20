@@ -15,39 +15,39 @@ import * as util from './util.js';
 // --
 
 // Compression format parameters/constants.
-var minMatch = 4;
-var minLength = 13;
-var searchLimit = 5;
-var skipTrigger = 6;
-var hashSize = 1 << 16;
+const minMatch = 4;
+const minLength = 13;
+const searchLimit = 5;
+const skipTrigger = 6;
+const hashSize = 1 << 16;
 
 // Token constants.
-var mlBits = 4;
-var mlMask = (1 << mlBits) - 1;
-var runBits = 4;
-var runMask = (1 << runBits) - 1;
+const mlBits = 4;
+const mlMask = (1 << mlBits) - 1;
+const runBits = 4;
+const runMask = (1 << runBits) - 1;
 
 // Shared buffers
-var blockBuf = makeBuffer(5 << 20);
-var hashTable = makeHashTable();
+const blockBuf = makeBuffer(5 << 20);
+const hashTable = makeHashTable();
 
 // Frame constants.
-var magicNum = 0x184D2204;
+const magicNum = 0x184D2204;
 
 // Frame descriptor flags.
-var fdContentChksum = 0x4;
-var fdContentSize = 0x8;
-var fdBlockChksum = 0x10;
-// var fdBlockIndep = 0x20;
-var fdVersion = 0x40;
-var fdVersionMask = 0xC0;
+const fdContentChksum = 0x4;
+const fdContentSize = 0x8;
+const fdBlockChksum = 0x10;
+// const fdBlockIndep = 0x20;
+const fdVersion = 0x40;
+const fdVersionMask = 0xC0;
 
 // Block sizes.
-var bsUncompressed = 0x80000000;
-var bsDefault = 7 as const;
-var bsShift = 4;
-var bsMask = 7;
-var bsMap = {
+const bsUncompressed = 0x80000000;
+const bsDefault = 7;
+const bsShift = 4;
+const bsMask = 7;
+const bsMap = {
   4: 0x10000,
   5: 0x40000,
   6: 0x100000,
@@ -62,9 +62,9 @@ function makeHashTable (): number[] | Uint32Array {
   try {
     return new Uint32Array(hashSize);
   } catch (error) {
-    var hashTable: number[] = new Array(hashSize);
+    const hashTable: number[] = new Array(hashSize);
 
-    for (var i = 0; i < hashSize; i++) {
+    for (let i = 0; i < hashSize; i++) {
       hashTable[i] = 0;
     }
 
@@ -74,7 +74,7 @@ function makeHashTable (): number[] | Uint32Array {
 
 // Clear hashtable.
 function clearHashTable (table: number[] | Uint32Array): void {
-  for (var i = 0; i < hashSize; i++) {
+  for (let i = 0; i < hashSize; i++) {
     hashTable[i] = 0;
   }
 }
@@ -84,9 +84,9 @@ function makeBuffer (size: number): number[] | Uint8Array {
   try {
     return new Uint8Array(size);
   } catch (error) {
-    var buf: number[] = new Array(size);
+    const buf: number[] = new Array(size);
 
-    for (var i = 0; i < size; i++) {
+    for (let i = 0; i < size; i++) {
       buf[i] = 0;
     }
 
@@ -100,7 +100,7 @@ function sliceArray <T extends number[] | Uint8Array>(array: T, start: number, e
       return array.slice(start, end);
     } else {
       // Uint8Array#slice polyfill.
-      var len = array.length;
+      const len = array.length;
 
       // Calculate start.
       start = start | 0;
@@ -111,8 +111,8 @@ function sliceArray <T extends number[] | Uint8Array>(array: T, start: number, e
       end = (end < 0) ? Math.max(len + end, 0) : Math.min(end, len);
 
       // Copy into new array.
-      var arraySlice = new Uint8Array(end - start);
-      for (var i = start, n = 0; i < end;) {
+      const arraySlice = new Uint8Array(end - start);
+      for (let i = start, n = 0; i < end;) {
         arraySlice[n++] = array[i++];
       }
 
@@ -134,7 +134,7 @@ export function compressBound (n: number): number {
 
 // Calculates an upper bound for lz4 decompression, by reading the data.
 export function decompressBound (src: number[] | Uint8Array): number {
-  var sIndex = 0;
+  let sIndex = 0;
 
   // Read magic number
   if (util.readU32(src, sIndex) !== magicNum) {
@@ -144,7 +144,7 @@ export function decompressBound (src: number[] | Uint8Array): number {
   sIndex += 4;
 
   // Read descriptor
-  var descriptor = src[sIndex++];
+  const descriptor = src[sIndex++];
 
   // Check version
   if ((descriptor & fdVersionMask) !== fdVersion) {
@@ -152,17 +152,17 @@ export function decompressBound (src: number[] | Uint8Array): number {
   }
 
   // Read flags
-  var useBlockSum = (descriptor & fdBlockChksum) !== 0;
-  var useContentSize = (descriptor & fdContentSize) !== 0;
+  const useBlockSum = (descriptor & fdBlockChksum) !== 0;
+  const useContentSize = (descriptor & fdContentSize) !== 0;
 
   // Read block size
-  var bsIdx = ((src[sIndex++] >> bsShift) & bsMask) as keyof typeof bsMap;
+  const bsIdx = ((src[sIndex++] >> bsShift) & bsMask) as keyof typeof bsMap;
 
   if (bsMap[bsIdx] === undefined) {
     throw new Error('invalid block size ' + bsIdx);
   }
 
-  var maxBlockSize = bsMap[bsIdx];
+  const maxBlockSize = bsMap[bsIdx];
 
   // Get content size
   if (useContentSize) {
@@ -173,9 +173,9 @@ export function decompressBound (src: number[] | Uint8Array): number {
   sIndex++;
 
   // Read blocks.
-  var maxSize = 0;
+  let maxSize = 0;
   while (true) {
-    var blockSize = util.readU32(src, sIndex);
+    let blockSize = util.readU32(src, sIndex);
     sIndex += 4;
 
     if (blockSize & bsUncompressed) {
@@ -202,18 +202,18 @@ export { makeBuffer };
 
 // Decompresses a block of Lz4.
 export function decompressBlock (src: number[] | Uint8Array, dst: number[] | Uint8Array, sIndex: number, sLength: number, dIndex: number): number {
-  var mLength, mOffset, sEnd, n, i;
-  var hasCopyWithin = dst.copyWithin !== undefined && dst.fill !== undefined;
+  let mLength: number, mOffset: number, sEnd: number, n: number, i: number;
+  const hasCopyWithin = dst.copyWithin !== undefined && dst.fill !== undefined;
 
   // Setup initial state.
   sEnd = sIndex + sLength;
 
   // Consume entire input block.
   while (sIndex < sEnd) {
-    var token = src[sIndex++];
+    const token = src[sIndex++];
 
     // Copy literals.
-    var literalCount = (token >> 4);
+    let literalCount = (token >> 4);
     if (literalCount > 0) {
       // Parse length.
       if (literalCount === 0xf) {
@@ -276,8 +276,8 @@ export function decompressBlock (src: number[] | Uint8Array, dst: number[] | Uin
 
 // Compresses a block with Lz4.
 export function compressBlock (src: number[] | Uint8Array, dst: number[] | Uint8Array, sIndex: number, sLength: number, hashTable: number[] | Uint32Array): number {
-  var mIndex, mAnchor, mLength, mOffset, mStep;
-  var literalCount, dIndex, sEnd, n;
+  let mIndex: number, mAnchor: number, mLength: number, mOffset: number, mStep: number;
+  let literalCount: number, dIndex: number, sEnd: number, n: number;
 
   // Setup initial state.
   dIndex = 0;
@@ -286,12 +286,12 @@ export function compressBlock (src: number[] | Uint8Array, dst: number[] | Uint8
 
   // Process only if block is large enough.
   if (sLength >= minLength) {
-    var searchMatchCount = (1 << skipTrigger) + 3;
+    let searchMatchCount = (1 << skipTrigger) + 3;
 
     // Consume until last n literals (Lz4 spec limitation.)
     while (sIndex + minMatch < sEnd - searchLimit) {
-      var seq = util.readU32(src, sIndex);
-      var hash = util.hashU32(seq) >>> 0;
+      const seq = util.readU32(src, sIndex);
+      let hash = util.hashU32(seq) >>> 0;
 
       // Crush hash to 16 bits.
       hash = ((hash >> 16) ^ hash) >>> 0 & 0xffff;
@@ -330,7 +330,7 @@ export function compressBlock (src: number[] | Uint8Array, dst: number[] | Uint8
       mLength = sIndex - mLength;
 
       // Write token + literal count.
-      var token = mLength < mlMask ? mLength : mlMask;
+      const token = mLength < mlMask ? mLength : mlMask;
       if (literalCount >= runMask) {
         dst[dIndex++] = (runMask << mlBits) + token;
         for (n = literalCount - runMask; n >= 0xff; n -= 0xff) {
@@ -342,7 +342,7 @@ export function compressBlock (src: number[] | Uint8Array, dst: number[] | Uint8
       }
 
       // Write literals.
-      for (var i = 0; i < literalCount; i++) {
+      for (let i = 0; i < literalCount; i++) {
         dst[dIndex++] = src[mAnchor + i];
       }
 
@@ -392,9 +392,9 @@ export function compressBlock (src: number[] | Uint8Array, dst: number[] | Uint8
 
 // Decompresses a frame of Lz4 data.
 export function decompressFrame (src: number[] | Uint8Array, dst: number[] | Uint8Array): number {
-  var useBlockSum, useContentSum, useContentSize, descriptor;
-  var sIndex = 0;
-  var dIndex = 0;
+  let useBlockSum: boolean, useContentSum: boolean, useContentSize: boolean, descriptor: number;
+  let sIndex = 0;
+  let dIndex = 0;
 
   // Read magic number
   if (util.readU32(src, sIndex) !== magicNum) {
@@ -417,7 +417,7 @@ export function decompressFrame (src: number[] | Uint8Array, dst: number[] | Uin
   useContentSize = (descriptor & fdContentSize) !== 0;
 
   // Read block size
-  var bsIdx = ((src[sIndex++] >> bsShift) & bsMask) as keyof typeof bsMap;
+  const bsIdx = ((src[sIndex++] >> bsShift) & bsMask) as keyof typeof bsMap;
 
   if (bsMap[bsIdx] === undefined) {
     throw new Error('invalid block size');
@@ -432,7 +432,7 @@ export function decompressFrame (src: number[] | Uint8Array, dst: number[] | Uin
 
   // Read blocks.
   while (true) {
-    var compSize;
+    let compSize: number;
 
     compSize = util.readU32(src, sIndex);
     sIndex += 4;
@@ -452,7 +452,7 @@ export function decompressFrame (src: number[] | Uint8Array, dst: number[] | Uin
       compSize &= ~bsUncompressed;
 
       // Copy uncompressed data into destination buffer.
-      for (var j = 0; j < compSize; j++) {
+      for (let j = 0; j < compSize; j++) {
         dst[dIndex++] = src[sIndex++];
       }
     } else {
@@ -472,7 +472,7 @@ export function decompressFrame (src: number[] | Uint8Array, dst: number[] | Uin
 
 // Compresses data to an Lz4 frame.
 export function compressFrame (src: number[] | Uint8Array, dst: number[] | Uint8Array): number {
-  var dIndex = 0;
+  let dIndex = 0;
 
   // Write magic number.
   util.writeU32(dst, dIndex, magicNum);
@@ -487,17 +487,17 @@ export function compressFrame (src: number[] | Uint8Array, dst: number[] | Uint8
   dIndex++;
 
   // Write blocks.
-  var maxBlockSize = bsMap[bsDefault];
-  var remaining = src.length;
-  var sIndex = 0;
+  const maxBlockSize = bsMap[bsDefault];
+  let remaining = src.length;
+  let sIndex = 0;
 
   // Clear the hashtable.
   clearHashTable(hashTable);
 
   // Split input into blocks and write.
   while (remaining > 0) {
-    var compSize = 0;
-    var blockSize = remaining > maxBlockSize ? maxBlockSize : remaining;
+    let compSize = 0;
+    const blockSize = remaining > maxBlockSize ? maxBlockSize : remaining;
 
     compSize = compressBlock(src, blockBuf, sIndex, blockSize, hashTable);
 
@@ -506,7 +506,7 @@ export function compressFrame (src: number[] | Uint8Array, dst: number[] | Uint8
       util.writeU32(dst, dIndex, 0x80000000 | blockSize);
       dIndex += 4;
 
-      for (var z = sIndex + blockSize; sIndex < z;) {
+      for (let z = sIndex + blockSize; sIndex < z;) {
         dst[dIndex++] = src[sIndex++];
       }
 
@@ -516,7 +516,7 @@ export function compressFrame (src: number[] | Uint8Array, dst: number[] | Uint8
       util.writeU32(dst, dIndex, compSize);
       dIndex += 4;
 
-      for (var j = 0; j < compSize;) {
+      for (let j = 0; j < compSize;) {
         dst[dIndex++] = blockBuf[j++];
       }
 
@@ -536,7 +536,7 @@ export function compressFrame (src: number[] | Uint8Array, dst: number[] | Uint8
 // provided, a maximum size will be determined by examining the data. The
 // buffer returned will always be perfectly-sized.
 export function decompress (src: number[] | Uint8Array, maxSize?: number): number[] | Uint8Array {
-  var dst, size;
+  let dst: number[] | Uint8Array, size: number;
 
   if (maxSize === undefined) {
     maxSize = decompressBound(src);
@@ -555,7 +555,7 @@ export function decompress (src: number[] | Uint8Array, maxSize?: number): numbe
 // a buffer will be created based on the theoretical worst output size for a
 // given input size. The buffer returned will always be perfectly-sized.
 export function compress (src: number[] | Uint8Array, maxSize?: number): number[] | Uint8Array {
-  var dst, size;
+  let dst: number[] | Uint8Array, size: number;
 
   if (maxSize === undefined) {
     maxSize = compressBound(src.length);

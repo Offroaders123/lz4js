@@ -12,7 +12,7 @@ export function hashU32(a: number): number {
 
 // Reads a 64-bit little-endian integer from an array.
 export function readU64(b: number[] | Uint8Array, n: number): number {
-    var x = 0;
+    let x = 0;
     x |= b[n++] << 0;
     x |= b[n++] << 8;
     x |= b[n++] << 16;
@@ -26,7 +26,7 @@ export function readU64(b: number[] | Uint8Array, n: number): number {
 
 // Reads a 32-bit little-endian integer from an array.
 export function readU32(b: number[] | Uint8Array, n: number): number {
-    var x = 0;
+    let x = 0;
     x |= b[n++] << 0;
     x |= b[n++] << 8;
     x |= b[n++] << 16;
@@ -45,10 +45,10 @@ export function writeU32(b: number[] | Uint8Array, n: number, x: number): void {
 // Multiplies two numbers using 32-bit integer multiplication.
 // Algorithm from Emscripten.
 export function imul(a: number, b: number): number {
-    var ah = a >>> 16;
-    var al = a & 65535;
-    var bh = b >>> 16;
-    var bl = b & 65535;
+    const ah = a >>> 16;
+    const al = a & 65535;
+    const bh = b >>> 16;
+    const bl = b & 65535;
 
     return al * bl + (ah * bl + al * bh << 16) | 0;
 };

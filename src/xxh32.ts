@@ -2,11 +2,11 @@
 import * as util from './util.js';
 
 // xxhash32 primes
-var prime1 = 0x9e3779b1;
-var prime2 = 0x85ebca77;
-var prime3 = 0xc2b2ae3d;
-var prime4 = 0x27d4eb2f;
-var prime5 = 0x165667b1;
+const prime1 = 0x9e3779b1;
+const prime2 = 0x85ebca77;
+const prime3 = 0xc2b2ae3d;
+const prime4 = 0x27d4eb2f;
+const prime5 = 0x165667b1;
 
 // Utility functions/primitives
 // --
@@ -58,7 +58,7 @@ function xxh16 (h: number[] | Uint8Array, src: number[] | Uint8Array, index: num
 }
 
 function xxh32 (seed: number, src: number[] | Uint8Array, index: number, len: number): number {
-  var h, l;
+  let h: number | number[] | Uint8Array, l: number;
   l = len;
   if (len >= 16) {
     h = [
