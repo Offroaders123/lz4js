@@ -1,10 +1,6 @@
 // Simple hash function, from: http://burtleburtle.net/bob/hash/integer.html.
 // Chosen because it doesn't use multiply and achieves full avalanche.
-/**
- * @param {number} a
- * @returns {number}
- */
-export function hashU32(a) {
+export function hashU32(a: number): number {
     a = a | 0;
     a = a + 2127912214 + (a << 12) | 0;
     a = a ^ -949894596 ^ a >>> 19;
@@ -15,12 +11,7 @@ export function hashU32(a) {
 }
 
 // Reads a 64-bit little-endian integer from an array.
-/**
- * @param {number[] | Uint8Array} b
- * @param {number} n
- * @returns {number}
- */
-export function readU64(b, n) {
+export function readU64(b: number[] | Uint8Array, n: number): number {
     var x = 0;
     x |= b[n++] << 0;
     x |= b[n++] << 8;
@@ -34,12 +25,7 @@ export function readU64(b, n) {
 }
 
 // Reads a 32-bit little-endian integer from an array.
-/**
- * @param {number[] | Uint8Array} b
- * @param {number} n
- * @returns {number}
- */
-export function readU32(b, n) {
+export function readU32(b: number[] | Uint8Array, n: number): number {
     var x = 0;
     x |= b[n++] << 0;
     x |= b[n++] << 8;
@@ -49,13 +35,7 @@ export function readU32(b, n) {
 }
 
 // Writes a 32-bit little-endian integer from an array.
-/**
- * @param {number[] | Uint8Array} b
- * @param {number} n
- * @param {number} x
- * @returns {void}
- */
-export function writeU32(b, n, x) {
+export function writeU32(b: number[] | Uint8Array, n: number, x: number): void {
     b[n++] = (x >> 0) & 0xff;
     b[n++] = (x >> 8) & 0xff;
     b[n++] = (x >> 16) & 0xff;
@@ -64,12 +44,7 @@ export function writeU32(b, n, x) {
 
 // Multiplies two numbers using 32-bit integer multiplication.
 // Algorithm from Emscripten.
-/**
- * @param {number} a
- * @param {number} b
- * @returns {number}
- */
-export function imul(a, b) {
+export function imul(a: number, b: number): number {
     var ah = a >>> 16;
     var al = a & 65535;
     var bh = b >>> 16;

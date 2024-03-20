@@ -11,25 +11,14 @@ var prime5 = 0x165667b1;
 // Utility functions/primitives
 // --
 
-/**
- * @param {number} x
- * @param {number} r
- * @returns {number}
- */
-function rotl32 (x, r) {
+function rotl32 (x: number, r: number): number {
   x = x | 0;
   r = r | 0;
 
   return x >>> (32 - r | 0) | x << r | 0;
 }
 
-/**
- * @param {number} h
- * @param {number} r
- * @param {number} m
- * @returns {number}
- */
-function rotmul32 (h, r, m) {
+function rotmul32 (h: number, r: number, m: number): number {
   h = h | 0;
   r = r | 0;
   m = m | 0;
@@ -37,12 +26,7 @@ function rotmul32 (h, r, m) {
   return util.imul(h >>> (32 - r | 0) | h << r, m) | 0;
 }
 
-/**
- * @param {number} h
- * @param {number} s
- * @returns {number}
- */
-function shiftxor32 (h, s) {
+function shiftxor32 (h: number, s: number): number {
   h = h | 0;
   s = s | 0;
 
@@ -52,45 +36,19 @@ function shiftxor32 (h, s) {
 // Implementation
 // --
 
-/**
- * @param {number} h
- * @param {number} src
- * @param {number} m0
- * @param {number} s
- * @param {number} m1
- * @returns {number}
- */
-function xxhapply (h, src, m0, s, m1) {
+function xxhapply (h: number, src: number, m0: number, s: number, m1: number): number {
   return rotmul32(util.imul(src, m0) + h, s, m1);
 }
 
-/**
- * @param {number} h
- * @param {number[] | Uint8Array} src
- * @param {number} index
- * @returns {number}
- */
-function xxh1 (h, src, index) {
+function xxh1 (h: number, src: number[] | Uint8Array, index: number): number {
   return rotmul32((h + util.imul(src[index], prime5)), 11, prime1);
 }
 
-/**
- * @param {number} h
- * @param {number[] | Uint8Array} src
- * @param {number} index
- * @returns {number}
- */
-function xxh4 (h, src, index) {
+function xxh4 (h: number, src: number[] | Uint8Array, index: number): number {
   return xxhapply(h, util.readU32(src, index), prime3, 17, prime4);
 }
 
-/**
- * @param {number[] | Uint8Array} h
- * @param {number[] | Uint8Array} src
- * @param {number} index
- * @returns {number[] | Uint8Array}
- */
-function xxh16 (h, src, index) {
+function xxh16 (h: number[] | Uint8Array, src: number[] | Uint8Array, index: number): number[] | Uint8Array {
   return [
     xxhapply(h[0], util.readU32(src, index + 0), prime2, 13, prime1),
     xxhapply(h[1], util.readU32(src, index + 4), prime2, 13, prime1),
@@ -99,14 +57,7 @@ function xxh16 (h, src, index) {
   ];
 }
 
-/**
- * @param {number} seed
- * @param {number[] | Uint8Array} src
- * @param {number} index
- * @param {number} len
- * @returns {number}
- */
-function xxh32 (seed, src, index, len) {
+function xxh32 (seed: number, src: number[] | Uint8Array, index: number, len: number): number {
   var h, l;
   l = len;
   if (len >= 16) {
