@@ -1,6 +1,6 @@
 /* eslint-env node, mocha */
 var expect = require('chai').expect;
-var lz4 = require('../../lz4');
+var lz4 = require('../../src/lz4');
 
 // Find root object (depends on JS environment)
 /** @type {typeof globalThis} */

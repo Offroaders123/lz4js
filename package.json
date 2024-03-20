@@ -2,8 +2,8 @@
   "name": "lz4js",
   "version": "0.2.0",
   "description": "An Lz4 implementation for the browser.",
-  "main": "lz4.js",
-  "types": "./types/lz4.d.ts",
+  "main": "src/lz4.js",
+  "types": "types/lz4.d.ts",
   "scripts": {
     "build": "tsc --project ./tsconfig.build.json",
     "dev": "tsc --watch",

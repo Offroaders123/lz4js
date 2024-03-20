@@ -1,6 +1,6 @@
 /* eslint-env node, mocha */
 var expect = require('chai').expect;
-var xxh32 = require('../../xxh32');
+var xxh32 = require('../../src/xxh32');
 
 describe('xxh32', function () {
   describe('#hash', function () {
