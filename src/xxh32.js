@@ -1,5 +1,5 @@
 // xxh32.js - implementation of xxhash32 in plain JavaScript
-var util = require('./util.js');
+import * as util from './util.js';
 
 // xxhash32 primes
 var prime1 = 0x9e3779b1;
@@ -148,4 +148,4 @@ function xxh32 (seed, src, index, len) {
   return h >>> 0;
 }
 
-exports.hash = xxh32;
+export { xxh32 as hash };
