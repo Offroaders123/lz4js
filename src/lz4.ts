@@ -8,8 +8,8 @@
 // - HC support (better search algorithm)
 // - Tests/benchmarking
 
-import * as xxhash from './xxh32.js';
-import * as util from './util.js';
+import { hash } from './xxh32.js';
+import { readU32, readU64, hashU32, writeU32 } from './util.js';
 
 // Constants
 // --
@@ -137,7 +137,7 @@ export function decompressBound (src: number[] | Uint8Array): number {
   let sIndex = 0;
 
   // Read magic number
-  if (util.readU32(src, sIndex) !== magicNum) {
+  if (readU32(src, sIndex) !== magicNum) {
     throw new Error('invalid magic number');
   }
 
@@ -166,7 +166,7 @@ export function decompressBound (src: number[] | Uint8Array): number {
 
   // Get content size
   if (useContentSize) {
-    return util.readU64(src, sIndex);
+    return readU64(src, sIndex);
   }
 
   // Checksum
@@ -175,7 +175,7 @@ export function decompressBound (src: number[] | Uint8Array): number {
   // Read blocks.
   let maxSize = 0;
   while (true) {
-    let blockSize = util.readU32(src, sIndex);
+    let blockSize = readU32(src, sIndex);
     sIndex += 4;
 
     if (blockSize & bsUncompressed) {
@@ -290,8 +290,8 @@ export function compressBlock (src: number[] | Uint8Array, dst: number[] | Uint8
 
     // Consume until last n literals (Lz4 spec limitation.)
     while (sIndex + minMatch < sEnd - searchLimit) {
-      const seq = util.readU32(src, sIndex);
-      let hash = util.hashU32(seq) >>> 0;
+      const seq = readU32(src, sIndex);
+      let hash = hashU32(seq) >>> 0;
 
       // Crush hash to 16 bits.
       hash = ((hash >> 16) ^ hash) >>> 0 & 0xffff;
@@ -303,7 +303,7 @@ export function compressBlock (src: number[] | Uint8Array, dst: number[] | Uint8
       hashTable[hash] = sIndex + 1;
 
       // Determine if there is a match (within range.)
-      if (mIndex < 0 || ((sIndex - mIndex) >>> 16) > 0 || util.readU32(src, mIndex) !== seq) {
+      if (mIndex < 0 || ((sIndex - mIndex) >>> 16) > 0 || readU32(src, mIndex) !== seq) {
         mStep = searchMatchCount++ >> skipTrigger;
         sIndex += mStep;
         continue;
@@ -397,7 +397,7 @@ export function decompressFrame (src: number[] | Uint8Array, dst: number[] | Uin
   let dIndex = 0;
 
   // Read magic number
-  if (util.readU32(src, sIndex) !== magicNum) {
+  if (readU32(src, sIndex) !== magicNum) {
     throw new Error('invalid magic number');
   }
 
@@ -434,7 +434,7 @@ export function decompressFrame (src: number[] | Uint8Array, dst: number[] | Uin
   while (true) {
     let compSize: number;
 
-    compSize = util.readU32(src, sIndex);
+    compSize = readU32(src, sIndex);
     sIndex += 4;
 
     if (compSize === 0) {
@@ -475,7 +475,7 @@ export function compressFrame (src: number[] | Uint8Array, dst: number[] | Uint8
   let dIndex = 0;
 
   // Write magic number.
-  util.writeU32(dst, dIndex, magicNum);
+  writeU32(dst, dIndex, magicNum);
   dIndex += 4;
 
   // Descriptor flags.
@@ -483,7 +483,7 @@ export function compressFrame (src: number[] | Uint8Array, dst: number[] | Uint8
   dst[dIndex++] = bsDefault << bsShift;
 
   // Descriptor checksum.
-  dst[dIndex] = xxhash.hash(0, dst, 4, dIndex - 4) >> 8;
+  dst[dIndex] = hash(0, dst, 4, dIndex - 4) >> 8;
   dIndex++;
 
   // Write blocks.
@@ -503,7 +503,7 @@ export function compressFrame (src: number[] | Uint8Array, dst: number[] | Uint8
 
     if (compSize > blockSize || compSize === 0) {
       // Output uncompressed.
-      util.writeU32(dst, dIndex, 0x80000000 | blockSize);
+      writeU32(dst, dIndex, 0x80000000 | blockSize);
       dIndex += 4;
 
       for (let z = sIndex + blockSize; sIndex < z;) {
@@ -513,7 +513,7 @@ export function compressFrame (src: number[] | Uint8Array, dst: number[] | Uint8
       remaining -= blockSize;
     } else {
       // Output compressed.
-      util.writeU32(dst, dIndex, compSize);
+      writeU32(dst, dIndex, compSize);
       dIndex += 4;
 
       for (let j = 0; j < compSize;) {
@@ -526,7 +526,7 @@ export function compressFrame (src: number[] | Uint8Array, dst: number[] | Uint8
   }
 
   // Write blank end block.
-  util.writeU32(dst, dIndex, 0);
+  writeU32(dst, dIndex, 0);
   dIndex += 4;
 
   return dIndex;

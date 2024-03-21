@@ -1,5 +1,5 @@
 // xxh32.js - implementation of xxhash32 in plain JavaScript
-import * as util from './util.js';
+import { imul, readU32 } from './util.js';
 
 // xxhash32 primes
 const prime1 = 0x9e3779b1;
@@ -23,7 +23,7 @@ function rotmul32 (h: number, r: number, m: number): number {
   r = r | 0;
   m = m | 0;
 
-  return util.imul(h >>> (32 - r | 0) | h << r, m) | 0;
+  return imul(h >>> (32 - r | 0) | h << r, m) | 0;
 }
 
 function shiftxor32 (h: number, s: number): number {
@@ -37,23 +37,23 @@ function shiftxor32 (h: number, s: number): number {
 // --
 
 function xxhapply (h: number, src: number, m0: number, s: number, m1: number): number {
-  return rotmul32(util.imul(src, m0) + h, s, m1);
+  return rotmul32(imul(src, m0) + h, s, m1);
 }
 
 function xxh1 (h: number, src: number[] | Uint8Array, index: number): number {
-  return rotmul32((h + util.imul(src[index], prime5)), 11, prime1);
+  return rotmul32((h + imul(src[index], prime5)), 11, prime1);
 }
 
 function xxh4 (h: number, src: number[] | Uint8Array, index: number): number {
-  return xxhapply(h, util.readU32(src, index), prime3, 17, prime4);
+  return xxhapply(h, readU32(src, index), prime3, 17, prime4);
 }
 
 function xxh16 (h: number[] | Uint8Array, src: number[] | Uint8Array, index: number): number[] | Uint8Array {
   return [
-    xxhapply(h[0], util.readU32(src, index + 0), prime2, 13, prime1),
-    xxhapply(h[1], util.readU32(src, index + 4), prime2, 13, prime1),
-    xxhapply(h[2], util.readU32(src, index + 8), prime2, 13, prime1),
-    xxhapply(h[3], util.readU32(src, index + 12), prime2, 13, prime1)
+    xxhapply(h[0], readU32(src, index + 0), prime2, 13, prime1),
+    xxhapply(h[1], readU32(src, index + 4), prime2, 13, prime1),
+    xxhapply(h[2], readU32(src, index + 8), prime2, 13, prime1),
+    xxhapply(h[3], readU32(src, index + 12), prime2, 13, prime1)
   ];
 }
 
@@ -94,7 +94,7 @@ function xxh32 (seed: number, src: number[] | Uint8Array, index: number, len: nu
     len--;
   }
 
-  h = shiftxor32(util.imul(shiftxor32(util.imul(shiftxor32(h, 15), prime2), 13), prime3), 16);
+  h = shiftxor32(imul(shiftxor32(imul(shiftxor32(h, 15), prime2), 13), prime3), 16);
 
   return h >>> 0;
 }
