@@ -86,7 +86,7 @@ describe('xxh32', function () {
 
       for (var i = 0; i < tests.length; ++i) {
         var expected = tests[i][0];
-        var vector = tests[i][1] as Uint8Array;
+        var vector = new Uint8Array(tests[i][1]);
         expect(hash(0, vector, 0, vector.length)).to.be.equal(expected);
       }
     });

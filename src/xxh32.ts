@@ -48,17 +48,19 @@ function xxh4 (h: number, src: Uint8Array, index: number): number {
   return xxhapply(h, readU32(src, index), prime3, 17, prime4);
 }
 
-function xxh16 (h: Uint8Array, src: Uint8Array, index: number): Uint8Array {
+type Hash = [number, number, number, number];
+
+function xxh16 (h: Hash, src: Uint8Array, index: number): Hash {
   return [
     xxhapply(h[0], readU32(src, index + 0), prime2, 13, prime1),
     xxhapply(h[1], readU32(src, index + 4), prime2, 13, prime1),
     xxhapply(h[2], readU32(src, index + 8), prime2, 13, prime1),
     xxhapply(h[3], readU32(src, index + 12), prime2, 13, prime1)
-  ] as Uint8Array;
+  ];
 }
 
 function xxh32 (seed: number, src: Uint8Array, index: number, len: number): number {
-  let h: number | Uint8Array, l: number;
+  let h: number | Hash, l: number;
   l = len;
   if (len >= 16) {
     h = [
@@ -66,7 +68,7 @@ function xxh32 (seed: number, src: Uint8Array, index: number, len: number): numb
       seed + prime2,
       seed,
       seed - prime1
-    ] as Uint8Array;
+    ];
 
     while (len >= 16) {
       h = xxh16(h, src, index);
