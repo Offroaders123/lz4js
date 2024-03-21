@@ -5,8 +5,7 @@ import * as xxh32 from '../../src/xxh32.js';
 describe('xxh32', function () {
   describe('#hash', function () {
     it('passes the github.com/pierrec/xxHash tests', function () {
-      /** @type {[number, number[]][]} */
-      var tests = [
+      var tests: [number, number[]][] = [
         [0x02cc5d05, []],
         [0x550d7456, [0x61]],
         [0x4999fc53, [0x61, 0x62]],

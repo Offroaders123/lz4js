@@ -3,8 +3,7 @@ import * as chai from 'chai';
 import * as lz4 from '../../src/lz4.js';
 
 // Find root object (depends on JS environment)
-/** @type {typeof globalThis} */
-var root;
+var root: typeof globalThis;
 if (typeof window !== 'undefined') {
   root = window;
 } else if (typeof global !== 'undefined') {
@@ -12,11 +11,7 @@ if (typeof window !== 'undefined') {
 }
 
 // Use plain old arrays for older browsers and older Node.
-/**
- * @param {number | number[]} [arg]
- * @returns {number[] | Uint8Array}
- */
-function byteArray (arg) {
+function byteArray (arg: number | number[]): number[] | Uint8Array {
   if (root.Uint8Array) {
     return new Uint8Array(arg);
   } else {
