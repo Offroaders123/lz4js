@@ -28,8 +28,8 @@ const runBits = 4;
 const runMask = (1 << runBits) - 1;
 
 // Shared buffers
-const blockBuf = makeBuffer(5 << 20);
-const hashTable = makeHashTable();
+const blockBuf = new Uint8Array(5 << 20);
+const hashTable = new Uint8Array(hashSize);
 
 // Frame constants.
 const magicNum = 0x184D2204;
@@ -53,76 +53,6 @@ const bsMap = {
   6: 0x100000,
   7: 0x400000
 } as const;
-
-// Utility functions/primitives
-// --
-
-// Makes our hashtable. On older browsers, may return a plain array.
-function makeHashTable (): Uint8Array {
-  // try {
-    return new Uint8Array(hashSize);
-  // } catch (error) {
-  //   const hashTable: number[] = new Array(hashSize);
-
-  //   for (let i = 0; i < hashSize; i++) {
-  //     hashTable[i] = 0;
-  //   }
-
-  //   return hashTable;
-  // }
-}
-
-// Clear hashtable.
-function clearHashTable (table: Uint8Array): void {
-  for (let i = 0; i < hashSize; i++) {
-    hashTable[i] = 0;
-  }
-}
-
-// Makes a byte buffer. On older browsers, may return a plain array.
-function makeBuffer (size: number): Uint8Array {
-  // try {
-    return new Uint8Array(size);
-  // } catch (error) {
-  //   const buf: number[] = new Array(size);
-
-  //   for (let i = 0; i < size; i++) {
-  //     buf[i] = 0;
-  //   }
-
-  //   return buf;
-  // }
-}
-
-function sliceArray (array: Uint8Array, start: number, end?: number): Uint8Array {
-  // if ("buffer" in array) {
-  //   if ("slice" in Uint8Array.prototype) {
-      return array.slice(start, end);
-  //   } else {
-  //     // Uint8Array#slice polyfill.
-  //     const len = array.length;
-
-  //     // Calculate start.
-  //     start = start | 0;
-  //     start = (start < 0) ? Math.max(len + start, 0) : Math.min(start, len);
-
-  //     // Calculate end.
-  //     end = (end === undefined) ? len : end | 0;
-  //     end = (end < 0) ? Math.max(len + end, 0) : Math.min(end, len);
-
-  //     // Copy into new array.
-  //     const arraySlice = new Uint8Array(end - start);
-  //     for (let i = start, n = 0; i < end;) {
-  //       arraySlice[n++] = array[i++];
-  //     }
-
-  //     return arraySlice;
-  //   }
-  // } else {
-  //   // Assume normal array.
-  //   return array.slice(start, end);
-  // }
-}
 
 // Implementation
 // --
@@ -196,9 +126,6 @@ export function decompressBound (src: Uint8Array): number {
     sIndex += blockSize;
   }
 };
-
-// Creates a buffer of a given byte-size, falling back to plain arrays.
-export { makeBuffer };
 
 // Decompresses a block of Lz4.
 export function decompressBlock (src: Uint8Array, dst: Uint8Array, sIndex: number, sLength: number, dIndex: number): number {
@@ -492,7 +419,7 @@ export function compressFrame (src: Uint8Array, dst: Uint8Array): number {
   let sIndex = 0;
 
   // Clear the hashtable.
-  clearHashTable(hashTable);
+  hashTable.fill(0);
 
   // Split input into blocks and write.
   while (remaining > 0) {
@@ -541,11 +468,11 @@ export function decompress (src: Uint8Array, maxSize?: number): Uint8Array {
   if (maxSize === undefined) {
     maxSize = decompressBound(src);
   }
-  dst = makeBuffer(maxSize);
+  dst = new Uint8Array(maxSize);
   size = decompressFrame(src, dst);
 
   if (size !== maxSize) {
-    dst = sliceArray(dst, 0, size);
+    dst = dst.slice(0, size);
   }
 
   return dst;
@@ -561,11 +488,11 @@ export function compress (src: Uint8Array, maxSize?: number): Uint8Array {
     maxSize = compressBound(src.length);
   }
 
-  dst = makeBuffer(maxSize);
+  dst = new Uint8Array(maxSize);
   size = compressFrame(src, dst);
 
   if (size !== maxSize) {
-    dst = sliceArray(dst, 0, size);
+    dst = dst.slice(0, size);
   }
 
   return dst;
