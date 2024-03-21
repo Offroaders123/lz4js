@@ -13,7 +13,7 @@ if (typeof window !== 'undefined') {
 // Use plain old arrays for older browsers and older Node.
 function byteArray (arg: number | number[]): number[] | Uint8Array {
   if (root.Uint8Array) {
-    return new Uint8Array(arg);
+    return new Uint8Array(arg as number & number[]);
   } else {
     if (typeof arg === 'number' || typeof arg === 'undefined') {
       return new Array(arg);

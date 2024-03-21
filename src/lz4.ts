@@ -94,9 +94,9 @@ function makeBuffer (size: number): number[] | Uint8Array {
   }
 }
 
-function sliceArray <T extends number[] | Uint8Array>(array: T, start: number, end?: number): T {
-  if (typeof array.buffer !== undefined) {
-    if (Uint8Array.prototype.slice) {
+function sliceArray (array: number[] | Uint8Array, start: number, end?: number): number[] | Uint8Array {
+  if ("buffer" in array) {
+    if ("slice" in Uint8Array.prototype) {
       return array.slice(start, end);
     } else {
       // Uint8Array#slice polyfill.
