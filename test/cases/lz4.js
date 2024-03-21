@@ -1,6 +1,6 @@
 /* eslint-env node, mocha */
-var expect = require('chai').expect;
-var lz4 = require('../../dist/lz4');
+import * as chai from 'chai';
+import * as lz4 from '../../dist/lz4.js';
 
 // Find root object (depends on JS environment)
 /** @type {typeof globalThis} */
@@ -32,12 +32,12 @@ describe('lz4', function () {
   describe('#decompress', function () {
     it('should decompress empty lz4 Array correctly', function () {
       var emptyLz4 = [4, 34, 77, 24, 64, 112, 223, 0, 0, 0, 0];
-      expect(lz4.decompress(emptyLz4)).to.be.deep.equal(byteArray(0));
+      chai.expect(lz4.decompress(emptyLz4)).to.be.deep.equal(byteArray(0));
     });
 
     it('should decompress empty lz4 Uint8Array correctly', function () {
       var emptyLz4 = byteArray([4, 34, 77, 24, 64, 112, 223, 0, 0, 0, 0]);
-      expect(lz4.decompress(emptyLz4)).to.be.deep.equal(byteArray(0));
+      chai.expect(lz4.decompress(emptyLz4)).to.be.deep.equal(byteArray(0));
     });
 
     it('should decompress data compressed with lz4c', function () {
@@ -55,7 +55,7 @@ describe('lz4', function () {
         0x64, 0x69, 0x6e, 0x67, 0x2e, 0x0a, 0x00, 0x00,
         0x00, 0x00, 0xbc, 0xa8, 0x6b, 0xc5
       ]);
-      expect(lz4.decompress(input)).to.be.deep.equal(output);
+      chai.expect(lz4.decompress(input)).to.be.deep.equal(output);
     });
 
     it('should decompress data compressed with lz4c (2)', function () {
@@ -84,7 +84,7 @@ describe('lz4', function () {
         0x77, 0x6f, 0x72, 0x6c, 0x64, 0x0a, 0x00, 0x00, 0x00, 0x00, 0x24, 0x2a,
         0xaf, 0xb9
       ]);
-      expect(lz4.decompress(input)).to.be.deep.equal(output);
+      chai.expect(lz4.decompress(input)).to.be.deep.equal(output);
     });
 
     it('should decompress data containing content-size', function () {
@@ -110,19 +110,19 @@ describe('lz4', function () {
         0x65, 0x2e, 0x0a, 0x00, 0x00, 0x00, 0x00, 0x9f,
         0xda, 0xad, 0x19
       ]);
-      expect(lz4.decompress(input)).to.be.deep.equal(output);
+      chai.expect(lz4.decompress(input)).to.be.deep.equal(output);
     });
 
     it('should fail on bad header magic', function () {
       var input = byteArray([5, 34, 77, 24, 64, 112, 223, 0, 0, 0, 0]);
       var fn = function () { return lz4.decompress(input); };
-      expect(fn).to.throw(/invalid magic number/);
+      chai.expect(fn).to.throw(/invalid magic number/);
     });
 
     it('should fail on bad block size', function () {
       var input = byteArray([4, 34, 77, 24, 64, 0, 223, 0, 0, 0, 0]);
       var fn = function () { return lz4.decompress(input); };
-      expect(fn).to.throw(/invalid block size/);
+      chai.expect(fn).to.throw(/invalid block size/);
     });
   });
 
@@ -155,19 +155,19 @@ describe('lz4', function () {
       var testOut = byteArray(70);
 
       lz4.decompressBlock(linuxTestIn, testOut, 0, 45, 0);
-      expect(testOut).to.be.deep.equal(linuxTestOut);
+      chai.expect(testOut).to.be.deep.equal(linuxTestOut);
     });
   });
 
   describe('#compress', function () {
     it('should compress empty Array correctly', function () {
       var emptyLz4 = byteArray([4, 34, 77, 24, 64, 112, 223, 0, 0, 0, 0]);
-      expect(lz4.compress([])).to.be.deep.equal(emptyLz4);
+      chai.expect(lz4.compress([])).to.be.deep.equal(emptyLz4);
     });
 
     it('should compress empty Uint8Array correctly', function () {
       var emptyLz4 = byteArray([4, 34, 77, 24, 64, 112, 223, 0, 0, 0, 0]);
-      expect(lz4.compress(byteArray(0))).to.be.deep.equal(emptyLz4);
+      chai.expect(lz4.compress(byteArray(0))).to.be.deep.equal(emptyLz4);
     });
 
     it('should output pseudo RLE', function () {
@@ -183,7 +183,7 @@ describe('lz4', function () {
         0x50, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00
       ]);
-      expect(lz4.compress(input)).to.be.deep.equal(output);
+      chai.expect(lz4.compress(input)).to.be.deep.equal(output);
     });
 
     it('should find matches', function () {
@@ -205,12 +205,12 @@ describe('lz4', function () {
         0x74, 0x00, 0x00, 0x00, 0x00
       ]);
 
-      expect(lz4.compress(input)).to.be.deep.equal(output);
+      chai.expect(lz4.compress(input)).to.be.deep.equal(output);
     });
 
     it('should use maxSize', function () {
       var emptyLz4 = byteArray([4, 34, 77, 24, 64, 112, 223, 0]);
-      expect(lz4.compress([], 8)).to.be.deep.equal(emptyLz4);
+      chai.expect(lz4.compress([], 8)).to.be.deep.equal(emptyLz4);
     });
 
     it('should not compress uncompressible data', function () {
@@ -232,7 +232,7 @@ describe('lz4', function () {
         0x1d, 0x1e, 0x1f, 0x00, 0x00, 0x00, 0x00
       ]);
 
-      expect(lz4.compress(input)).to.be.deep.equal(output);
+      chai.expect(lz4.compress(input)).to.be.deep.equal(output);
     });
   });
 
@@ -266,8 +266,8 @@ describe('lz4', function () {
 
       sz = lz4.compressBlock(input, testOut, 0, input.length, lz4.makeBuffer(1 << 16));
 
-      expect(sz).to.be.equal(59);
-      expect(testOut).to.be.deep.equal(output);
+      chai.expect(sz).to.be.equal(59);
+      chai.expect(testOut).to.be.deep.equal(output);
     });
   });
 });

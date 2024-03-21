@@ -2,7 +2,7 @@
   "compilerOptions": {
     "allowJs": true,
     "checkJs": true,
-    "module": "CommonJS",
+    "module": "NodeNext",
     "target": "ESNext",
     "isolatedModules": true,
     "noEmit": true,

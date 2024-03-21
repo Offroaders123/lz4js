@@ -1,6 +1,6 @@
 /* eslint-env node, mocha */
-var expect = require('chai').expect;
-var xxh32 = require('../../dist/xxh32');
+import * as chai from 'chai';
+import * as xxh32 from '../../dist/xxh32.js';
 
 describe('xxh32', function () {
   describe('#hash', function () {
@@ -88,7 +88,7 @@ describe('xxh32', function () {
       for (var i = 0; i < tests.length; ++i) {
         var expected = tests[i][0];
         var vector = tests[i][1];
-        expect(xxh32.hash(0, vector, 0, vector.length)).to.be.equal(expected);
+        chai.expect(xxh32.hash(0, vector, 0, vector.length)).to.be.equal(expected);
       }
     });
   });
