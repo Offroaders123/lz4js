@@ -1,6 +1,6 @@
 /* eslint-env node, mocha */
 import * as chai from 'chai';
-import * as xxh32 from '../../dist/xxh32.js';
+import * as xxh32 from '../../src/xxh32.js';
 
 describe('xxh32', function () {
   describe('#hash', function () {

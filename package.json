@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc --project ./tsconfig.build.json",
     "dev": "tsc --watch",
-    "test": "mocha -R spec test/cases"
+    "test": "mocha --import=tsx -R spec test/cases/**/*"
   },
   "repository": {
     "type": "git",
@@ -39,6 +39,7 @@
     "eslint-plugin-react": "^7.34.1",
     "eslint-plugin-standard": "^5.0.0",
     "mocha": "^10.3.0",
+    "tsx": "^4.7.1",
     "typescript": "^5.4.3"
   }
 }

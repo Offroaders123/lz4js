@@ -1,6 +1,6 @@
 /* eslint-env node, mocha */
 import * as chai from 'chai';
-import * as lz4 from '../../dist/lz4.js';
+import * as lz4 from '../../src/lz4.js';
 
 // Find root object (depends on JS environment)
 /** @type {typeof globalThis} */
