@@ -2,31 +2,31 @@
 import { expect } from 'chai';
 import * as lz4 from '../../src/lz4.js';
 
-// Find root object (depends on JS environment)
-var root: typeof globalThis;
-if (typeof window !== 'undefined') {
-  root = window;
-} else if (typeof global !== 'undefined') {
-  root = global;
-}
+// // Find root object (depends on JS environment)
+// var root: typeof globalThis;
+// if (typeof window !== 'undefined') {
+//   root = window;
+// } else if (typeof global !== 'undefined') {
+//   root = global;
+// }
 
 // Use plain old arrays for older browsers and older Node.
-function byteArray (arg: number | number[]): number[] | Uint8Array {
-  if (root.Uint8Array) {
+function byteArray (arg: number | number[]): Uint8Array {
+  // if (root.Uint8Array) {
     return new Uint8Array(arg as number & number[]);
-  } else {
-    if (typeof arg === 'number' || typeof arg === 'undefined') {
-      return new Array(arg);
-    } else {
-      return arg;
-    }
-  }
+  // } else {
+  //   if (typeof arg === 'number' || typeof arg === 'undefined') {
+  //     return new Array(arg);
+  //   } else {
+  //     return arg;
+  //   }
+  // }
 }
 
 describe('lz4', function () {
   describe('#decompress', function () {
     it('should decompress empty lz4 Array correctly', function () {
-      var emptyLz4 = [4, 34, 77, 24, 64, 112, 223, 0, 0, 0, 0];
+      var emptyLz4 = [4, 34, 77, 24, 64, 112, 223, 0, 0, 0, 0] as Uint8Array;
       expect(lz4.decompress(emptyLz4)).to.be.deep.equal(byteArray(0));
     });
 
@@ -157,7 +157,7 @@ describe('lz4', function () {
   describe('#compress', function () {
     it('should compress empty Array correctly', function () {
       var emptyLz4 = byteArray([4, 34, 77, 24, 64, 112, 223, 0, 0, 0, 0]);
-      expect(lz4.compress([])).to.be.deep.equal(emptyLz4);
+      expect(lz4.compress([] as Uint8Array)).to.be.deep.equal(emptyLz4);
     });
 
     it('should compress empty Uint8Array correctly', function () {
@@ -205,7 +205,7 @@ describe('lz4', function () {
 
     it('should use maxSize', function () {
       var emptyLz4 = byteArray([4, 34, 77, 24, 64, 112, 223, 0]);
-      expect(lz4.compress([], 8)).to.be.deep.equal(emptyLz4);
+      expect(lz4.compress([] as Uint8Array, 8)).to.be.deep.equal(emptyLz4);
     });
 
     it('should not compress uncompressible data', function () {

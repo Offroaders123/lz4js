@@ -11,7 +11,7 @@ export function hashU32(a: number): number {
 }
 
 // Reads a 64-bit little-endian integer from an array.
-export function readU64(b: number[] | Uint8Array, n: number): number {
+export function readU64(b: Uint8Array, n: number): number {
     let x = 0;
     x |= b[n++] << 0;
     x |= b[n++] << 8;
@@ -25,7 +25,7 @@ export function readU64(b: number[] | Uint8Array, n: number): number {
 }
 
 // Reads a 32-bit little-endian integer from an array.
-export function readU32(b: number[] | Uint8Array, n: number): number {
+export function readU32(b: Uint8Array, n: number): number {
     let x = 0;
     x |= b[n++] << 0;
     x |= b[n++] << 8;
@@ -35,7 +35,7 @@ export function readU32(b: number[] | Uint8Array, n: number): number {
 }
 
 // Writes a 32-bit little-endian integer from an array.
-export function writeU32(b: number[] | Uint8Array, n: number, x: number): void {
+export function writeU32(b: Uint8Array, n: number, x: number): void {
     b[n++] = (x >> 0) & 0xff;
     b[n++] = (x >> 8) & 0xff;
     b[n++] = (x >> 16) & 0xff;
