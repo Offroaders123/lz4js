@@ -1,5 +1,5 @@
 // xxh32.js - implementation of xxhash32 in plain JavaScript
-import { imul, readU32 } from './util.js';
+import { readU32 } from './util.js';
 
 // xxhash32 primes
 const prime1 = 0x9e3779b1;
@@ -23,7 +23,7 @@ function rotmul32 (h: number, r: number, m: number): number {
   r = r | 0;
   m = m | 0;
 
-  return imul(h >>> (32 - r | 0) | h << r, m) | 0;
+  return Math.imul(h >>> (32 - r | 0) | h << r, m) | 0;
 }
 
 function shiftxor32 (h: number, s: number): number {
@@ -37,11 +37,11 @@ function shiftxor32 (h: number, s: number): number {
 // --
 
 function xxhapply (h: number, src: number, m0: number, s: number, m1: number): number {
-  return rotmul32(imul(src, m0) + h, s, m1);
+  return rotmul32(Math.imul(src, m0) + h, s, m1);
 }
 
 function xxh1 (h: number, src: Uint8Array, index: number): number {
-  return rotmul32((h + imul(src[index], prime5)), 11, prime1);
+  return rotmul32((h + Math.imul(src[index], prime5)), 11, prime1);
 }
 
 function xxh4 (h: number, src: Uint8Array, index: number): number {
@@ -94,7 +94,7 @@ function xxh32 (seed: number, src: Uint8Array, index: number, len: number): numb
     len--;
   }
 
-  h = shiftxor32(imul(shiftxor32(imul(shiftxor32(h, 15), prime2), 13), prime3), 16);
+  h = shiftxor32(Math.imul(shiftxor32(Math.imul(shiftxor32(h, 15), prime2), 13), prime3), 16);
 
   return h >>> 0;
 }

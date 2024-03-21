@@ -41,14 +41,3 @@ export function writeU32(b: Uint8Array, n: number, x: number): void {
     b[n++] = (x >> 16) & 0xff;
     b[n++] = (x >> 24) & 0xff;
 }
-
-// Multiplies two numbers using 32-bit integer multiplication.
-// Algorithm from Emscripten.
-export function imul(a: number, b: number): number {
-    const ah = a >>> 16;
-    const al = a & 65535;
-    const bh = b >>> 16;
-    const bl = b & 65535;
-
-    return al * bl + (ah * bl + al * bh << 16) | 0;
-};
