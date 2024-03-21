@@ -58,9 +58,9 @@ const bsMap = {
 // --
 
 // Makes our hashtable. On older browsers, may return a plain array.
-function makeHashTable (): number[] | Uint32Array {
+function makeHashTable (): number[] | Uint8Array {
   try {
-    return new Uint32Array(hashSize);
+    return new Uint8Array(hashSize);
   } catch (error) {
     const hashTable: number[] = new Array(hashSize);
 
@@ -73,7 +73,7 @@ function makeHashTable (): number[] | Uint32Array {
 }
 
 // Clear hashtable.
-function clearHashTable (table: number[] | Uint32Array): void {
+function clearHashTable (table: number[] | Uint8Array): void {
   for (let i = 0; i < hashSize; i++) {
     hashTable[i] = 0;
   }
@@ -275,7 +275,7 @@ export function decompressBlock (src: number[] | Uint8Array, dst: number[] | Uin
 };
 
 // Compresses a block with Lz4.
-export function compressBlock (src: number[] | Uint8Array, dst: number[] | Uint8Array, sIndex: number, sLength: number, hashTable: number[] | Uint32Array): number {
+export function compressBlock (src: number[] | Uint8Array, dst: number[] | Uint8Array, sIndex: number, sLength: number, hashTable: number[] | Uint8Array): number {
   let mIndex: number, mAnchor: number, mLength: number, mOffset: number, mStep: number;
   let literalCount: number, dIndex: number, sEnd: number, n: number;
 
