@@ -460,15 +460,61 @@ function compressFrame(src: Uint8Array, dst: Uint8Array): number {
 };
 
 class LZ4Encoder {
-  feed(chunk: Uint8Array): Uint8Array[] {}
+  private pending: Uint8Array[] = [];
 
-  flush(): Uint8Array[] {}
+  feed(chunk: Uint8Array): Uint8Array[] {
+    this.pending.push(chunk);
+
+    const out: Uint8Array[] = [];
+    // While pending >= BLOCK_SIZE
+    //   take slice
+    //   compress
+    //   out.push(block)
+
+    // Leave any remainder in pending
+    return out;
+  }
+
+  flush(): Uint8Array[] {
+    const out: Uint8Array[] = [];
+    if (this.pending.length > 0) {
+      const all: Uint8Array = concat(this.pending);
+      out.push(compress(all)); // final block
+    }
+    // Optionally emit frame footer
+    return out;
+  }
 }
 
 class LZ4Decoder {
-  feed(chunk: Uint8Array): Uint8Array[] {}
+  private buffer: Uint8Array<ArrayBuffer> = new Uint8Array(0);
 
-  flush(): Uint8Array[] {}
+  feed(chunk: Uint8Array): Uint8Array[] {
+    this.buffer = concat([this.buffer, chunk]);
+
+    const out: Uint8Array[] = [];
+    let offset = 0;
+
+    while (true) {
+      const maybeBlock = tryParseBlock(this.buffer.subarray(offset));
+      if (!maybeBlock) break;
+
+      const { block, consumed } = maybeBlock;
+      const decompressed = decompressBlock(block);
+      out.push(decompressed);
+      offset += consumed;
+    }
+
+    this.buffer = this.buffer.subarray(offset);
+    return out;
+  }
+
+  flush(): Uint8Array[] {
+    if (this.buffer.length > 0) {
+      throw new Error("Unexpected trailing data");
+    }
+    return [];
+  }
 }
 
 // Decompresses a buffer containing an Lz4 frame. maxSize is optional; if not
