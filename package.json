@@ -28,12 +28,12 @@
   },
   "homepage": "https://github.com/Benzinga/lz4js#readme",
   "devDependencies": {
-    "@types/chai": "^4.3.19",
-    "@types/mocha": "^10.0.8",
-    "@types/node": "^22.5.4",
-    "chai": "^5.1.1",
-    "mocha": "^10.7.3",
-    "tsx": "^4.19.1",
-    "typescript": "^5.6.2"
+    "@types/chai": "^5.2.2",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.5.2",
+    "chai": "^6.0.1",
+    "mocha": "^11.7.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
   }
 }
