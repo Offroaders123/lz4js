@@ -11,14 +11,14 @@ const prime5 = 0x165667b1;
 // Utility functions/primitives
 // --
 
-function rotl32 (x: number, r: number): number {
+function rotl32(x: number, r: number): number {
   x = x | 0;
   r = r | 0;
 
   return x >>> (32 - r | 0) | x << r | 0;
 }
 
-function rotmul32 (h: number, r: number, m: number): number {
+function rotmul32(h: number, r: number, m: number): number {
   h = h | 0;
   r = r | 0;
   m = m | 0;
@@ -26,7 +26,7 @@ function rotmul32 (h: number, r: number, m: number): number {
   return Math.imul(h >>> (32 - r | 0) | h << r, m) | 0;
 }
 
-function shiftxor32 (h: number, s: number): number {
+function shiftxor32(h: number, s: number): number {
   h = h | 0;
   s = s | 0;
 
@@ -36,21 +36,21 @@ function shiftxor32 (h: number, s: number): number {
 // Implementation
 // --
 
-function xxhapply (h: number, src: number, m0: number, s: number, m1: number): number {
+function xxhapply(h: number, src: number, m0: number, s: number, m1: number): number {
   return rotmul32(Math.imul(src, m0) + h, s, m1);
 }
 
-function xxh1 (h: number, src: Uint8Array, index: number): number {
+function xxh1(h: number, src: Uint8Array, index: number): number {
   return rotmul32((h + Math.imul(src[index], prime5)), 11, prime1);
 }
 
-function xxh4 (h: number, src: Uint8Array, index: number): number {
+function xxh4(h: number, src: Uint8Array, index: number): number {
   return xxhapply(h, readU32(src, index), prime3, 17, prime4);
 }
 
 type Hash = [number, number, number, number];
 
-function xxh16 (h: Hash, src: Uint8Array, index: number): Hash {
+function xxh16(h: Hash, src: Uint8Array, index: number): Hash {
   return [
     xxhapply(h[0], readU32(src, index + 0), prime2, 13, prime1),
     xxhapply(h[1], readU32(src, index + 4), prime2, 13, prime1),
@@ -59,7 +59,7 @@ function xxh16 (h: Hash, src: Uint8Array, index: number): Hash {
   ];
 }
 
-function xxh32 (seed: number, src: Uint8Array, index: number, len: number): number {
+function xxh32(seed: number, src: Uint8Array, index: number, len: number): number {
   let h: number | Hash, l: number;
   l = len;
   if (len >= 16) {
