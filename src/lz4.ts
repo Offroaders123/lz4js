@@ -58,12 +58,12 @@ const bsMap = {
 // --
 
 // Calculates an upper bound for lz4 compression.
-export function compressBound(n: number): number {
+function compressBound(n: number): number {
   return (n + (n / 255) + 16) | 0;
 };
 
 // Calculates an upper bound for lz4 decompression, by reading the data.
-export function decompressBound(src: Uint8Array): number {
+function decompressBound(src: Uint8Array): number {
   let sIndex = 0;
 
   // Read magic number
@@ -128,7 +128,7 @@ export function decompressBound(src: Uint8Array): number {
 };
 
 // Decompresses a block of Lz4.
-export function decompressBlock(src: Uint8Array, dst: Uint8Array, sIndex: number, sLength: number, dIndex: number): number {
+function decompressBlock(src: Uint8Array, dst: Uint8Array, sIndex: number, sLength: number, dIndex: number): number {
   let mLength: number, mOffset: number, sEnd: number, n: number, i: number;
   const hasCopyWithin = dst.copyWithin !== undefined && dst.fill !== undefined;
 
@@ -202,7 +202,7 @@ export function decompressBlock(src: Uint8Array, dst: Uint8Array, sIndex: number
 };
 
 // Compresses a block with Lz4.
-export function compressBlock(src: Uint8Array, dst: Uint8Array, sIndex: number, sLength: number, hashTable: Uint8Array): number {
+function compressBlock(src: Uint8Array, dst: Uint8Array, sIndex: number, sLength: number, hashTable: Uint8Array): number {
   let mIndex: number, mAnchor: number, mLength: number, mOffset: number, mStep: number;
   let literalCount: number, dIndex: number, sEnd: number, n: number;
 
@@ -318,7 +318,7 @@ export function compressBlock(src: Uint8Array, dst: Uint8Array, sIndex: number, 
 };
 
 // Decompresses a frame of Lz4 data.
-export function decompressFrame(src: Uint8Array, dst: Uint8Array): number {
+function decompressFrame(src: Uint8Array, dst: Uint8Array): number {
   let useBlockSum: boolean, useContentSum: boolean, useContentSize: boolean, descriptor: number;
   let sIndex = 0;
   let dIndex = 0;
@@ -398,7 +398,7 @@ export function decompressFrame(src: Uint8Array, dst: Uint8Array): number {
 };
 
 // Compresses data to an Lz4 frame.
-export function compressFrame(src: Uint8Array, dst: Uint8Array): number {
+function compressFrame(src: Uint8Array, dst: Uint8Array): number {
   let dIndex = 0;
 
   // Write magic number.
@@ -459,10 +459,22 @@ export function compressFrame(src: Uint8Array, dst: Uint8Array): number {
   return dIndex;
 };
 
+class LZ4Encoder {
+  feed(chunk: Uint8Array): Uint8Array[] {}
+
+  flush(): Uint8Array[] {}
+}
+
+class LZ4Decoder {
+  feed(chunk: Uint8Array): Uint8Array[] {}
+
+  flush(): Uint8Array[] {}
+}
+
 // Decompresses a buffer containing an Lz4 frame. maxSize is optional; if not
 // provided, a maximum size will be determined by examining the data. The
 // buffer returned will always be perfectly-sized.
-export function decompress(src: Uint8Array, maxSize?: number): Uint8Array {
+function decompress(src: Uint8Array, maxSize?: number): Uint8Array {
   let dst: Uint8Array, size: number;
 
   if (maxSize === undefined) {
@@ -481,7 +493,7 @@ export function decompress(src: Uint8Array, maxSize?: number): Uint8Array {
 // Compresses a buffer to an Lz4 frame. maxSize is optional; if not provided,
 // a buffer will be created based on the theoretical worst output size for a
 // given input size. The buffer returned will always be perfectly-sized.
-export function compress(src: Uint8Array, maxSize?: number): Uint8Array {
+function compress(src: Uint8Array, maxSize?: number): Uint8Array {
   let dst: Uint8Array, size: number;
 
   if (maxSize === undefined) {
