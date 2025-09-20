@@ -58,12 +58,12 @@ const bsMap = {
 // --
 
 // Calculates an upper bound for lz4 compression.
-function compressBound(n: number): number {
+export function compressBound(n: number): number {
   return (n + (n / 255) + 16) | 0;
 };
 
 // Calculates an upper bound for lz4 decompression, by reading the data.
-function decompressBound(src: Uint8Array): number {
+export function decompressBound(src: Uint8Array): number {
   let sIndex = 0;
 
   // Read magic number
@@ -128,7 +128,7 @@ function decompressBound(src: Uint8Array): number {
 };
 
 // Decompresses a block of Lz4.
-function decompressBlock(src: Uint8Array, dst: Uint8Array, sIndex: number, sLength: number, dIndex: number): number {
+export function decompressBlock(src: Uint8Array, dst: Uint8Array, sIndex: number, sLength: number, dIndex: number): number {
   let mLength: number, mOffset: number, sEnd: number, n: number, i: number;
   const hasCopyWithin = dst.copyWithin !== undefined && dst.fill !== undefined;
 
@@ -202,7 +202,7 @@ function decompressBlock(src: Uint8Array, dst: Uint8Array, sIndex: number, sLeng
 };
 
 // Compresses a block with Lz4.
-function compressBlock(src: Uint8Array, dst: Uint8Array, sIndex: number, sLength: number, hashTable: Uint8Array): number {
+export function compressBlock(src: Uint8Array, dst: Uint8Array, sIndex: number, sLength: number, hashTable: Uint8Array): number {
   let mIndex: number, mAnchor: number, mLength: number, mOffset: number, mStep: number;
   let literalCount: number, dIndex: number, sEnd: number, n: number;
 
@@ -318,7 +318,7 @@ function compressBlock(src: Uint8Array, dst: Uint8Array, sIndex: number, sLength
 };
 
 // Decompresses a frame of Lz4 data.
-function decompressFrame(src: Uint8Array, dst: Uint8Array): number {
+export function decompressFrame(src: Uint8Array, dst: Uint8Array): number {
   let useBlockSum: boolean, useContentSum: boolean, useContentSize: boolean, descriptor: number;
   let sIndex = 0;
   let dIndex = 0;
@@ -398,7 +398,7 @@ function decompressFrame(src: Uint8Array, dst: Uint8Array): number {
 };
 
 // Compresses data to an Lz4 frame.
-function compressFrame(src: Uint8Array, dst: Uint8Array): number {
+export function compressFrame(src: Uint8Array, dst: Uint8Array): number {
   let dIndex = 0;
 
   // Write magic number.
@@ -459,7 +459,7 @@ function compressFrame(src: Uint8Array, dst: Uint8Array): number {
   return dIndex;
 };
 
-class LZ4Encoder {
+export class LZ4Encoder {
   private hashTable: Uint8Array;
   private pending: Uint8Array[] = [];
   private readonly blockSize: number;
@@ -541,7 +541,7 @@ class LZ4Encoder {
   }
 }
 
-class LZ4Decoder {
+export class LZ4Decoder {
   private buffer = new Uint8Array(0);
 
   feed(chunk: Uint8Array): Uint8Array[] {
@@ -583,7 +583,7 @@ class LZ4Decoder {
   }
 }
 
-function streamFromCodec(codec: { feed(c: Uint8Array): Uint8Array[]; flush(): Uint8Array[] }): TransformStream<Uint8Array<ArrayBufferLike>, Uint8Array<ArrayBufferLike>> {
+export function streamFromCodec(codec: { feed(c: Uint8Array): Uint8Array[]; flush(): Uint8Array[] }): TransformStream<Uint8Array<ArrayBufferLike>, Uint8Array<ArrayBufferLike>> {
   return new TransformStream<Uint8Array, Uint8Array>({
     transform(chunk, controller) {
       for (const out of codec.feed(chunk)) controller.enqueue(out);
@@ -594,7 +594,7 @@ function streamFromCodec(codec: { feed(c: Uint8Array): Uint8Array[]; flush(): Ui
   });
 }
 
-class LZ4CompressionStream implements TransformStream<Uint8Array, Uint8Array> {
+export class LZ4CompressionStream implements TransformStream<Uint8Array, Uint8Array> {
   declare readonly readable: ReadableStream<Uint8Array>;
   declare readonly writable: WritableStream<Uint8Array>;
   private encoder: LZ4Encoder;
@@ -620,7 +620,7 @@ class LZ4CompressionStream implements TransformStream<Uint8Array, Uint8Array> {
   }
 }
 
-class LZ4DecompressionStream implements TransformStream<Uint8Array, Uint8Array> {
+export class LZ4DecompressionStream implements TransformStream<Uint8Array, Uint8Array> {
   declare readonly readable: ReadableStream<Uint8Array>;
   declare readonly writable: WritableStream<Uint8Array>;
   private decoder: LZ4Decoder;
@@ -648,7 +648,7 @@ class LZ4DecompressionStream implements TransformStream<Uint8Array, Uint8Array> 
 // Decompresses a buffer containing an Lz4 frame. maxSize is optional; if not
 // provided, a maximum size will be determined by examining the data. The
 // buffer returned will always be perfectly-sized.
-function decompress(src: Uint8Array, maxSize?: number): Uint8Array {
+export function decompress(src: Uint8Array, maxSize?: number): Uint8Array {
   let dst: Uint8Array, size: number;
 
   if (maxSize === undefined) {
@@ -667,7 +667,7 @@ function decompress(src: Uint8Array, maxSize?: number): Uint8Array {
 // Compresses a buffer to an Lz4 frame. maxSize is optional; if not provided,
 // a buffer will be created based on the theoretical worst output size for a
 // given input size. The buffer returned will always be perfectly-sized.
-function compress(src: Uint8Array, maxSize?: number): Uint8Array {
+export function compress(src: Uint8Array, maxSize?: number): Uint8Array {
   let dst: Uint8Array, size: number;
 
   if (maxSize === undefined) {
