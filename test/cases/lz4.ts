@@ -244,4 +244,99 @@ describe('lz4', function () {
       expect(testOut).to.be.deep.equal(output);
     });
   });
+
+  // New streaming tests
+  describe('streaming API', function () {
+    it('should compress and decompress using TransformStream', async function () {
+      const input = new Uint8Array([
+        0x74, 0x65, 0x73, 0x74, 0x74, 0x65, 0x73, 0x74,
+        0x74, 0x65, 0x73, 0x74, 0x74, 0x65, 0x73, 0x74
+      ]);
+
+      // Compress
+      const sourceStream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(input);
+          controller.close();
+        }
+      });
+
+      const compressedStream = sourceStream.pipeThrough(new lz4.LZ4CompressionStream());
+
+      // Collect compressed chunks
+      const compressedChunks: Uint8Array[] = [];
+      const reader = compressedStream.getReader();
+      let result;
+      while (!(result = await reader.read()).done) {
+        compressedChunks.push(result.value);
+      }
+      const compressed = concatUint8Arrays(compressedChunks);
+
+      // Decompress
+      const decompressedStream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(compressed);
+          controller.close();
+        }
+      }).pipeThrough(new lz4.LZ4DecompressionStream());
+
+      const decompressedChunks: Uint8Array[] = [];
+      const decompressedReader = decompressedStream.getReader();
+      while (!(result = await decompressedReader.read()).done) {
+        decompressedChunks.push(result.value);
+      }
+      const decompressed = concatUint8Arrays(decompressedChunks);
+
+      expect(decompressed).to.be.deep.equal(input);
+    });
+
+    it('should handle empty input with streaming API', async function () {
+      const input = new Uint8Array(0);
+
+      const sourceStream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(input);
+          controller.close();
+        }
+      });
+
+      const compressedStream = sourceStream.pipeThrough(new lz4.LZ4CompressionStream());
+
+      const compressedChunks: Uint8Array[] = [];
+      const reader = compressedStream.getReader();
+      let result;
+      while (!(result = await reader.read()).done) {
+        compressedChunks.push(result.value);
+      }
+      const compressed = concatUint8Arrays(compressedChunks);
+
+      const decompressedStream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(compressed);
+          controller.close();
+        }
+      }).pipeThrough(new lz4.LZ4DecompressionStream());
+
+      const decompressedChunks: Uint8Array[] = [];
+      const decompressedReader = decompressedStream.getReader();
+      while (!(result = await decompressedReader.read()).done) {
+        decompressedChunks.push(result.value);
+      }
+      const decompressed = concatUint8Arrays(decompressedChunks);
+
+      expect(decompressed).to.be.deep.equal(input);
+    });
+  });
 });
+
+// Helper to concatenate multiple Uint8Arrays
+function concatUint8Arrays(arrays: Uint8Array[]): Uint8Array {
+  const totalLength = arrays.reduce((sum, a) => sum + a.length, 0);
+  const result = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const arr of arrays) {
+    result.set(arr, offset);
+    offset += arr.length;
+  }
+  return result;
+}
