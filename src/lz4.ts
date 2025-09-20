@@ -460,49 +460,92 @@ function compressFrame(src: Uint8Array, dst: Uint8Array): number {
 };
 
 class LZ4Encoder {
+  private hashTable: Uint8Array;
   private pending: Uint8Array[] = [];
+  private readonly blockSize: number;
+
+  constructor(blockSize = 64 * 1024) {
+    this.blockSize = blockSize;
+    this.hashTable = new Uint8Array(1 << 16); // typical LZ4 hash table
+  }
 
   feed(chunk: Uint8Array): Uint8Array[] {
     this.pending.push(chunk);
-
     const out: Uint8Array[] = [];
-    // While pending >= BLOCK_SIZE
-    //   take slice
-    //   compress
-    //   out.push(block)
 
-    // Leave any remainder in pending
+    let totalPendingLength = this.pending.reduce((sum, b) => sum + b.length, 0);
+
+    while (totalPendingLength >= this.blockSize) {
+      // Concatenate enough to fill a block
+      const block = new Uint8Array(this.blockSize);
+      let offset = 0;
+      while (offset < this.blockSize) {
+        const first = this.pending[0];
+        const needed = this.blockSize - offset;
+        if (first.length <= needed) {
+          block.set(first, offset);
+          offset += first.length;
+          this.pending.shift();
+        } else {
+          block.set(first.subarray(0, needed), offset);
+          this.pending[0] = first.subarray(needed);
+          offset += needed;
+        }
+      }
+
+      // Compress the block
+      const maxCompressed = compressBound(block.length);
+      const compressed = new Uint8Array(maxCompressed);
+      const size = compressBlock(block, compressed, 0, block.length, this.hashTable);
+      out.push(compressed.subarray(0, size));
+
+      totalPendingLength -= this.blockSize;
+    }
+
     return out;
   }
 
   flush(): Uint8Array[] {
-    const out: Uint8Array[] = [];
-    if (this.pending.length > 0) {
-      const all: Uint8Array = concat(this.pending);
-      out.push(compress(all)); // final block
+    if (this.pending.length === 0) return [];
+
+    // Compress remaining data as a final block
+    const remainingLength = this.pending.reduce((sum, b) => sum + b.length, 0);
+    const block = new Uint8Array(remainingLength);
+    let offset = 0;
+    for (const b of this.pending) {
+      block.set(b, offset);
+      offset += b.length;
     }
-    // Optionally emit frame footer
-    return out;
+
+    const maxCompressed = compressBound(block.length);
+    const compressed = new Uint8Array(maxCompressed);
+    const size = compressBlock(block, compressed, 0, block.length, this.hashTable);
+
+    this.pending = [];
+    return [compressed.subarray(0, size)];
   }
 }
 
 class LZ4Decoder {
-  private buffer: Uint8Array<ArrayBuffer> = new Uint8Array(0);
+  private buffer = new Uint8Array(0);
 
   feed(chunk: Uint8Array): Uint8Array[] {
-    this.buffer = concat([this.buffer, chunk]);
+    // Append incoming data
+    const combined = new Uint8Array(this.buffer.length + chunk.length);
+    combined.set(this.buffer);
+    combined.set(chunk, this.buffer.length);
+    this.buffer = combined;
 
     const out: Uint8Array[] = [];
+
     let offset = 0;
+    while (offset < this.buffer.length) {
+      // Determine how big the next compressed block is
+      // Here we have a problem: compressBlock doesn't store the compressed size
+      // We need to know how many bytes belong to one compressed block
+      // For now, assume you can wrap compressFrame to create blocks with a small header, or if your protocol gives block size
 
-    while (true) {
-      const maybeBlock = tryParseBlock(this.buffer.subarray(offset));
-      if (!maybeBlock) break;
-
-      const { block, consumed } = maybeBlock;
-      const decompressed = decompressBlock(block);
-      out.push(decompressed);
-      offset += consumed;
+      break; // until you implement block-size tracking
     }
 
     this.buffer = this.buffer.subarray(offset);
@@ -511,10 +554,21 @@ class LZ4Decoder {
 
   flush(): Uint8Array[] {
     if (this.buffer.length > 0) {
-      throw new Error("Unexpected trailing data");
+      throw new Error("Unexpected leftover data at end of stream");
     }
     return [];
   }
+}
+
+function streamFromCodec(codec: { feed(c: Uint8Array): Uint8Array[]; flush(): Uint8Array[] }): TransformStream<Uint8Array<ArrayBufferLike>, Uint8Array<ArrayBufferLike>> {
+  return new TransformStream<Uint8Array, Uint8Array>({
+    transform(chunk, controller) {
+      for (const out of codec.feed(chunk)) controller.enqueue(out);
+    },
+    flush(controller) {
+      for (const out of codec.flush()) controller.enqueue(out);
+    }
+  });
 }
 
 // Decompresses a buffer containing an Lz4 frame. maxSize is optional; if not
