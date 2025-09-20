@@ -594,6 +594,57 @@ function streamFromCodec(codec: { feed(c: Uint8Array): Uint8Array[]; flush(): Ui
   });
 }
 
+class LZ4CompressionStream implements TransformStream<Uint8Array, Uint8Array> {
+  declare readonly readable: ReadableStream<Uint8Array>;
+  declare readonly writable: WritableStream<Uint8Array>;
+  private encoder: LZ4Encoder;
+
+  constructor() {
+    this.encoder = new LZ4Encoder();
+
+    const transformStream = new TransformStream<Uint8Array, Uint8Array>({
+      transform: (chunk, controller) => {
+        for (const out of this.encoder.feed(chunk)) {
+          controller.enqueue(out);
+        }
+      },
+      flush: (controller) => {
+        for (const out of this.encoder.flush()) {
+          controller.enqueue(out);
+        }
+      }
+    });
+
+    // Copy the underlying controller methods so the instance itself acts like a TransformStream
+    Object.setPrototypeOf(this, transformStream);
+  }
+}
+
+class LZ4DecompressionStream implements TransformStream<Uint8Array, Uint8Array> {
+  declare readonly readable: ReadableStream<Uint8Array>;
+  declare readonly writable: WritableStream<Uint8Array>;
+  private decoder: LZ4Decoder;
+
+  constructor() {
+    this.decoder = new LZ4Decoder();
+
+    const transformStream = new TransformStream<Uint8Array, Uint8Array>({
+      transform: (chunk, controller) => {
+        for (const out of this.decoder.feed(chunk)) {
+          controller.enqueue(out);
+        }
+      },
+      flush: (controller) => {
+        for (const out of this.decoder.flush()) {
+          controller.enqueue(out);
+        }
+      }
+    });
+
+    Object.setPrototypeOf(this, transformStream);
+  }
+}
+
 // Decompresses a buffer containing an Lz4 frame. maxSize is optional; if not
 // provided, a maximum size will be determined by examining the data. The
 // buffer returned will always be perfectly-sized.
