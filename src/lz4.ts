@@ -497,8 +497,16 @@ class LZ4Encoder {
       const maxCompressed = compressBound(block.length);
       const compressed = new Uint8Array(maxCompressed);
       const size = compressBlock(block, compressed, 0, block.length, this.hashTable);
-      out.push(compressed.subarray(0, size));
 
+      // Prefix length
+      const prefixed = new Uint8Array(4 + size);
+      prefixed[0] = size & 0xff;
+      prefixed[1] = (size >> 8) & 0xff;
+      prefixed[2] = (size >> 16) & 0xff;
+      prefixed[3] = (size >> 24) & 0xff;
+      prefixed.set(compressed.subarray(0, size), 4);
+
+      out.push(prefixed);
       totalPendingLength -= this.blockSize;
     }
 
@@ -521,8 +529,15 @@ class LZ4Encoder {
     const compressed = new Uint8Array(maxCompressed);
     const size = compressBlock(block, compressed, 0, block.length, this.hashTable);
 
+    const prefixed = new Uint8Array(4 + size);
+    prefixed[0] = size & 0xff;
+    prefixed[1] = (size >> 8) & 0xff;
+    prefixed[2] = (size >> 16) & 0xff;
+    prefixed[3] = (size >> 24) & 0xff;
+    prefixed.set(compressed.subarray(0, size), 4);
+
     this.pending = [];
-    return [compressed.subarray(0, size)];
+    return [prefixed];
   }
 }
 
@@ -539,13 +554,21 @@ class LZ4Decoder {
     const out: Uint8Array[] = [];
 
     let offset = 0;
-    while (offset < this.buffer.length) {
-      // Determine how big the next compressed block is
-      // Here we have a problem: compressBlock doesn't store the compressed size
-      // We need to know how many bytes belong to one compressed block
-      // For now, assume you can wrap compressFrame to create blocks with a small header, or if your protocol gives block size
 
-      break; // until you implement block-size tracking
+    while (this.buffer.length - offset >= 4) {
+      const size = this.buffer[offset] |
+        (this.buffer[offset + 1] << 8) |
+        (this.buffer[offset + 2] << 16) |
+        (this.buffer[offset + 3] << 24);
+      if (this.buffer.length - offset - 4 < size) break; // wait for more data
+
+      const compressedBlock = this.buffer.subarray(offset + 4, offset + 4 + size);
+      const dstLength = decompressBound(compressedBlock);
+      const dst = new Uint8Array(dstLength);
+      decompressBlock(compressedBlock, dst, 0, compressedBlock.length, 0);
+      out.push(dst);
+
+      offset += 4 + size;
     }
 
     this.buffer = this.buffer.subarray(offset);
