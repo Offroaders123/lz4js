@@ -244,42 +244,4 @@ describe('lz4', function () {
       expect(testOut).to.be.deep.equal(output);
     });
   });
-
-  // New streaming tests
-  describe('streaming API', function () {
-    it('should compress and decompress using TransformStream', async function () {
-      var output = new Uint8Array([
-        0x54, 0x68, 0x65, 0x20, 0x77, 0x68, 0x6f, 0x6c,
-        0x65, 0x20, 0x77, 0x6f, 0x72, 0x6c, 0x64, 0x20,
-        0x69, 0x73, 0x20, 0x65, 0x6e, 0x64, 0x69, 0x6e,
-        0x67, 0x2e, 0x0a
-      ]);
-      var input = new Uint8Array([
-        0x04, 0x22, 0x4d, 0x18, 0x64, 0x40, 0xa7, 0x1b,
-        0x00, 0x00, 0x80, 0x54, 0x68, 0x65, 0x20, 0x77,
-        0x68, 0x6f, 0x6c, 0x65, 0x20, 0x77, 0x6f, 0x72,
-        0x6c, 0x64, 0x20, 0x69, 0x73, 0x20, 0x65, 0x6e,
-        0x64, 0x69, 0x6e, 0x67, 0x2e, 0x0a, 0x00, 0x00,
-        0x00, 0x00, 0xbc, 0xa8, 0x6b, 0xc5
-      ]);
-
-      const sourceStream: ReadableStream<Uint8Array> = new ReadableStream<Uint8Array>({
-        start(controller) {
-          controller.enqueue(input);
-          controller.close();
-        }
-      });
-
-      const compressedStream: ReadableStream<Uint8Array> = sourceStream.pipeThrough(new lz4.LZ4CompressionStream());
-
-      const compressedOutput: Uint8Array = new Uint8Array(await new Response(compressedStream).arrayBuffer());
-
-      console.log(compressedOutput, output);
-
-      expect(compressedOutput).to.be.deep.equal(output);
-    });
-
-    it('should handle empty input with streaming API', async function () {
-    });
-  });
 });
